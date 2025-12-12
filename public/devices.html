@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devices - Heart Track</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>❤️ Heart Track</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="devices.html" class="active">Devices</a></li>
+                <li><a href="chat.html">Health Assistant</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="#" id="logout-btn">Logout</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Devices Content -->
+    <main class="devices-page">
+        <div class="container">
+            <div class="page-header">
+                <h1>My Devices</h1>
+                <button class="btn btn-primary" id="add-device-btn">+ Add New Device</button>
+            </div>
+
+            <div id="device-message" class="message" style="display: none;"></div>
+
+            <!-- Devices List -->
+            <div id="devices-list" class="devices-grid">
+                <!-- Devices will be loaded here dynamically -->
+            </div>
+
+            <div id="no-devices" class="info-box" style="display: none;">
+                <h3>No Devices Registered</h3>
+                <p>Click "Add New Device" to register your first Heart Track device.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Device Modal -->
+    <div id="add-device-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Register New Device</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="add-device-form">
+                <div class="form-group">
+                    <label for="device-id">Device ID *</label>
+                    <input 
+                        type="text" 
+                        id="device-id" 
+                        name="deviceId" 
+                        required 
+                        placeholder="Enter Sensor device ID"
+                    >
+                    <small class="form-help">
+                        Find your device ID on the Sensor console
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="device-name">Device Name *</label>
+                    <input 
+                        type="text" 
+                        id="device-name" 
+                        name="deviceName" 
+                        required 
+                        placeholder="e.g., Living Room Monitor"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="firmware-version">Firmware Version</label>
+                    <input 
+                        type="text" 
+                        id="firmware-version" 
+                        name="firmwareVersion" 
+                        placeholder="e.g., 1.0.0"
+                        value="1.0.0"
+                    >
+                    <small class="form-help">
+                        Default: 1.0.0
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="is-active">
+                        <input 
+                            type="checkbox" 
+                            id="is-active" 
+                            name="isActive" 
+                            checked
+                        >
+                        Active Status
+                    </label>
+                    <small class="form-help">
+                        Uncheck to disable this device
+                    </small>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-add-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Register Device</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Device Details Modal -->
+    <div id="device-details-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Device Details</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div id="device-details-content">
+                <!-- Device details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Device Modal -->
+    <div id="edit-device-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Device</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="edit-device-form">
+                <input type="hidden" id="edit-device-id" name="deviceId">
+                
+                <div class="form-group">
+                    <label for="edit-device-name">Device Name *</label>
+                    <input 
+                        type="text" 
+                        id="edit-device-name" 
+                        name="deviceName" 
+                        required 
+                        placeholder="e.g., Living Room Monitor"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-firmware-version">Firmware Version</label>
+                    <input 
+                        type="text" 
+                        id="edit-firmware-version" 
+                        name="firmwareVersion" 
+                        placeholder="e.g., 1.0.0"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-is-active">
+                        <input 
+                            type="checkbox" 
+                            id="edit-is-active" 
+                            name="isActive"
+                        >
+                        Active Status
+                    </label>
+                    <small class="form-help">
+                        Uncheck to disable this device
+                    </small>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-edit-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+    <script src="/js/devices.js"></script>
+</body>
+</html>
+

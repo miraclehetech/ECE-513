@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Heart Track</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>❤️ Heart Track</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="devices.html">Devices</a></li>
+                <li><a href="chat.html">Health Assistant</a></li>
+                <li><a href="profile.html" class="active">Profile</a></li>
+                <li><a href="#" id="logout-btn">Logout</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Profile Content -->
+    <main class="profile-page">
+        <div class="container">
+            <h1>My Profile</h1>
+
+            <div id="profile-message" class="message" style="display: none;"></div>
+
+            <!-- Profile Information -->
+            <div class="profile-section">
+                <h2>Personal Information</h2>
+                <form id="profile-form" class="profile-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="full-name">Full Name</label>
+                            <input type="text" id="full-name" name="fullName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" disabled>
+                            <small class="form-help">Email cannot be changed</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="date-of-birth">Date of Birth</label>
+                            <input type="date" id="date-of-birth" name="dateOfBirth">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </form>
+            </div>
+
+            <!-- Physician Selection (ECE 513) -->
+            <div class="profile-section">
+                <h2>My Physician</h2>
+                <div id="current-physician" class="physician-info">
+                    <p>No physician assigned</p>
+                </div>
+                <button class="btn btn-secondary" id="select-physician-btn">Select Physician</button>
+            </div>
+
+            <!-- Account Settings -->
+            <div class="profile-section">
+                <h2>Account Information</h2>
+                <div class="account-info">
+                    <p><strong>Account Created:</strong> <span id="account-created">--</span></p>
+                    <p><strong>Last Updated:</strong> <span id="account-updated">--</span></p>
+                    <p><strong>Number of Devices:</strong> <span id="device-count">0</span></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Select Physician Modal (ECE 513) -->
+    <div id="physician-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Select Your Physician</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div id="physicians-list" class="physicians-list">
+                <!-- Physicians will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancel-physician-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+    <script src="/js/profile.js"></script>
+</body>
+</html>
+

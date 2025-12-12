@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physician Registration - Heart Track</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>❤️ Heart Track</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="register.html">Sign Up</a></li>
+                <li><a href="references.html">References</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Physician Registration Section -->
+    <section class="auth-section">
+        <div class="container">
+            <div class="auth-container">
+                <h2>Physician Registration</h2>
+                <p class="auth-subtitle">Register as a healthcare provider (ECE 513)</p>
+
+                <div id="register-message" class="message" style="display: none;"></div>
+
+                <form id="physician-register-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="fullName">Full Name *</label>
+                        <input 
+                            type="text" 
+                            id="fullName" 
+                            name="fullName" 
+                            required 
+                            placeholder="Dr. John Smith"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            required 
+                            placeholder="doctor@hospital.com"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="licenseNumber">Medical License Number *</label>
+                        <input 
+                            type="text" 
+                            id="licenseNumber" 
+                            name="licenseNumber" 
+                            required 
+                            placeholder="Enter your medical license number"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="specialty">Specialty</label>
+                        <input 
+                            type="text" 
+                            id="specialty" 
+                            name="specialty" 
+                            placeholder="e.g., Cardiology"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input 
+                            type="tel" 
+                            id="phone" 
+                            name="phone" 
+                            placeholder="Contact number"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password *</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required 
+                            placeholder="Create a strong password"
+                        >
+                        <small class="form-help">
+                            Must be at least 8 characters with uppercase, lowercase, number, and special character
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password *</label>
+                        <input 
+                            type="password" 
+                            id="confirmPassword" 
+                            name="confirmPassword" 
+                            required 
+                            placeholder="Confirm your password"
+                        >
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block" id="register-btn">
+                        Register as Physician
+                    </button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="login.html">Sign in here</a></p>
+                    <p><a href="register.html">Register as a patient instead</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="/js/main.js"></script>
+    <script>
+        document.getElementById('physician-register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showMessage('register-message', 'Passwords do not match', 'error');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('register-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating account...';
+            
+            try {
+                const formData = {
+                    email: document.getElementById('email').value,
+                    password: password,
+                    fullName: document.getElementById('fullName').value,
+                    licenseNumber: document.getElementById('licenseNumber').value,
+                    specialty: document.getElementById('specialty').value || undefined,
+                    phone: document.getElementById('phone').value || undefined
+                };
+                
+                const data = await apiRequest('/auth/physician/register', {
+                    method: 'POST',
+                    body: JSON.stringify(formData)
+                });
+                
+                setAuthToken(data.token);
+                showMessage('register-message', 'Physician account created! Redirecting...', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = '/physician-dashboard.html';
+                }, 1000);
+            } catch (error) {
+                showMessage('register-message', error.message, 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Register as Physician';
+            }
+        });
+    </script>
+</body>
+</html>
+

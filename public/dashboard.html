@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Heart Track</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>❤️ Heart Track</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                <li><a href="devices.html">Devices</a></li>
+                <li><a href="chat.html">Health Assistant</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="#" id="logout-btn">Logout</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <main class="dashboard">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>Welcome, <span id="user-name">User</span></h1>
+                <p>Monitor your heart health at a glance</p>
+            </div>
+
+            <!-- View Selector -->
+            <div class="view-selector">
+                <button class="view-btn active" data-view="weekly">Weekly Summary</button>
+                <button class="view-btn" data-view="daily">Daily Details</button>
+            </div>
+
+            <!-- Weekly Summary View -->
+            <div id="weekly-view" class="dashboard-view">
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <div class="card-icon">❤️</div>
+                        <h3>Average Heart Rate</h3>
+                        <p class="card-value" id="avg-heart-rate">--</p>
+                        <p class="card-unit">bpm</p>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon">⬆️</div>
+                        <h3>Maximum Heart Rate</h3>
+                        <p class="card-value" id="max-heart-rate">--</p>
+                        <p class="card-unit">bpm</p>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon">⬇️</div>
+                        <h3>Minimum Heart Rate</h3>
+                        <p class="card-value" id="min-heart-rate">--</p>
+                        <p class="card-unit">bpm</p>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon">🫁</div>
+                        <h3>Average Blood O₂</h3>
+                        <p class="card-value" id="avg-blood-oxygen">--</p>
+                        <p class="card-unit">%</p>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h3>📊 Weekly Summary (Last 7 Days)</h3>
+                    <p>Total measurements: <span id="measurement-count">0</span></p>
+                    <p>Date range: <span id="date-range">--</span></p>
+                </div>
+            </div>
+
+            <!-- Daily Details View -->
+            <div id="daily-view" class="dashboard-view" style="display: none;">
+                <div class="date-selector">
+                    <label for="selected-date">Select Date:</label>
+                    <input type="date" id="selected-date" name="selected-date">
+                    <button class="btn btn-secondary" id="load-daily-btn">Load Data</button>
+                </div>
+
+                <div class="charts-container">
+                    <div class="chart-wrapper">
+                        <h3>Heart Rate Throughout the Day</h3>
+                        <canvas id="heart-rate-chart"></canvas>
+                        <div class="chart-stats">
+                            <span>Min: <strong id="daily-hr-min">--</strong> bpm</span>
+                            <span>Max: <strong id="daily-hr-max">--</strong> bpm</span>
+                            <span>Avg: <strong id="daily-hr-avg">--</strong> bpm</span>
+                        </div>
+                    </div>
+
+                    <div class="chart-wrapper">
+                        <h3>Blood Oxygen Saturation Throughout the Day</h3>
+                        <canvas id="blood-oxygen-chart"></canvas>
+                        <div class="chart-stats">
+                            <span>Min: <strong id="daily-o2-min">--</strong>%</span>
+                            <span>Max: <strong id="daily-o2-max">--</strong>%</span>
+                            <span>Avg: <strong id="daily-o2-avg">--</strong>%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="no-data-message" class="info-box" style="display: none;">
+                    <p>No measurements found for the selected date.</p>
+                </div>
+            </div>
+
+            <!-- Measurement Preferences -->
+            <div class="preferences-section">
+                <h2>Measurement Preferences</h2>
+                <form id="preferences-form" class="preferences-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="start-time">Start Time</label>
+                            <input type="time" id="start-time" name="startTime" value="06:00">
+                        </div>
+                        <div class="form-group">
+                            <label for="end-time">End Time</label>
+                            <input type="time" id="end-time" name="endTime" value="22:00">
+                        </div>
+                        <div class="form-group">
+                            <label for="frequency">Frequency (minutes)</label>
+                            <input type="number" id="frequency" name="frequency" value="30" min="5" max="480">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Preferences</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/main.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>
+
