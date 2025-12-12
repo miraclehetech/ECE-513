@@ -1,0 +1,30 @@
+# Heart Track Device Configuration
+# ECE 413/513 Project
+
+[measurement]
+# Measurement schedule (24-hour format)
+start_hour = 6          # Start measurements at 6:00 AM
+end_hour = 22           # End measurements at 10:00 PM
+interval_seconds = 1800 # Take measurement every 1800 seconds (30 minutes)
+
+# Measurement quality settings
+stabilization_time = 1    # Seconds to wait for stable reading
+min_readings = 3           # Minimum readings to average
+
+[device]
+id = "device_001"
+reminder_timeout_seconds = 60  # 5 minutes
+
+[storage]
+max_hours = 24          # Maximum local storage duration (hours)
+file = "local_measurements.db"  # SQLite database file
+
+[mqtt]
+endpoint = ""
+client_id = "ece513"
+topic = "ece513"
+
+[security]
+cert_path = ""
+key_path = ""
+api_key = ""
