@@ -81,9 +81,14 @@ class HeartTrackDevice:
         self.led_green = None
         self._init_gpio()
         
-        # Initialize sensor
-        self.sensor = HeartRateMonitor(print_raw=False, print_result=True)
-        
+        # Initialize sensor with config parameters
+        self.sensor = HeartRateMonitor(
+            stabilization_time=self.config["measurement"]["stabilization_time"],
+            min_readings=self.config["measurement"]["min_readings"],
+            print_raw=False,
+            print_result=True
+        )
+
         # Timing variables
         self.last_measurement_time = None
         self.next_measurement_time = self.calculate_next_measurement_time()
@@ -159,7 +164,7 @@ class HeartTrackDevice:
                 "measurement": ["start_hour", "end_hour", "interval_seconds", "stabilization_time", "min_readings"],
                 "device": ["id", "reminder_timeout_seconds"],
                 "storage": ["max_hours", "file"],
-                "mqtt": ["endpoint", "client_id", "topic"],
+                "mqtt": ["endpoint", "client_id", "topic"],  # config_topic is optional
                 "security": ["cert_path", "key_path", "api_key"]
             }
             
@@ -245,6 +250,7 @@ class HeartTrackDevice:
                 on_lifecycle_connection_success=self.on_lifecycle_connection_success,
                 on_lifecycle_connection_failure=self.on_lifecycle_connection_failure,
                 on_lifecycle_disconnection=self.on_lifecycle_disconnection,
+                on_publish_received=self.on_publish_received,
                 client_id=self.config["mqtt"]["client_id"]
             )
             
@@ -276,9 +282,89 @@ class HeartTrackDevice:
         self.wifi_connected = True
         self.connection_success.set()
         
+        # Subscribe to configuration topic
+        config_topic = self.config["mqtt"].get("config_topic", "ece513/config")
+        try:
+            subscribe_future = self.mqtt_client.subscribe(
+                mqtt5.SubscribePacket(
+                    subscriptions=[
+                        mqtt5.Subscription(
+                            topic_filter=config_topic,
+                            qos=mqtt5.QoS.AT_LEAST_ONCE
+                        )
+                    ]
+                )
+            )
+            subscribe_future.result(timeout=5)
+            print(f"✓ Subscribed to configuration topic: {config_topic}")
+        except Exception as e:
+            print(f"⚠ Failed to subscribe to config topic: {e}")
+
         # Try to send any locally stored data
         self.transmit_stored_data()
     
+    def on_publish_received(self, publish_received_data: Any):
+        """
+        MQTT callback: handle incoming configuration messages.
+
+        Expected JSON format:
+        {
+            "interval_seconds": 900,  // Optional: new measurement interval
+            "start_hour": 6,          // Optional: new start hour
+            "end_hour": 22            // Optional: new end hour
+        }
+        """
+        try:
+            publish_packet = publish_received_data.publish_packet
+            payload = publish_packet.payload.decode('utf-8')
+            topic = publish_packet.topic
+
+            print(f"\n📩 Received message on topic: {topic}")
+            print(f"Payload: {payload}")
+
+            # Parse JSON configuration
+            config_update = json.loads(payload)
+
+            # Update measurement interval if provided
+            if "interval_seconds" in config_update:
+                new_interval = int(config_update["interval_seconds"])
+                if 60 <= new_interval <= 86400:  # Between 1 min and 24 hours
+                    old_interval = self.config["measurement"]["interval_seconds"]
+                    self.config["measurement"]["interval_seconds"] = new_interval
+                    print(f"✓ Updated interval: {old_interval}s → {new_interval}s")
+                    # Recalculate next measurement time
+                    self.next_measurement_time = self.calculate_next_measurement_time()
+                    print(f"  Next measurement: {self.next_measurement_time}")
+                else:
+                    print(f"⚠ Invalid interval: {new_interval}s (must be 60-86400)")
+
+            # Update start hour if provided
+            if "start_hour" in config_update:
+                new_start = int(config_update["start_hour"])
+                if 0 <= new_start <= 23:
+                    old_start = self.config["measurement"]["start_hour"]
+                    self.config["measurement"]["start_hour"] = new_start
+                    print(f"✓ Updated start hour: {old_start} → {new_start}")
+                    self.next_measurement_time = self.calculate_next_measurement_time()
+                else:
+                    print(f"⚠ Invalid start_hour: {new_start} (must be 0-23)")
+
+            # Update end hour if provided
+            if "end_hour" in config_update:
+                new_end = int(config_update["end_hour"])
+                if 0 <= new_end <= 23:
+                    old_end = self.config["measurement"]["end_hour"]
+                    self.config["measurement"]["end_hour"] = new_end
+                    print(f"✓ Updated end hour: {old_end} → {new_end}")
+                    self.next_measurement_time = self.calculate_next_measurement_time()
+                else:
+                    print(f"⚠ Invalid end_hour: {new_end} (must be 0-23)")
+
+        except json.JSONDecodeError as e:
+            print(f"⚠ Invalid JSON in config message: {e}")
+        except Exception as e:
+            print(f"⚠ Error processing config message: {e}")
+
     def on_lifecycle_connection_failure(self, lifecycle_connection_failure: Any):
         """MQTT lifecycle callback: connection failed."""
         print(f"Connection failed: {lifecycle_connection_failure.exception}")
@@ -353,61 +439,24 @@ class HeartTrackDevice:
         print("\n=== Taking Measurement ===")
         print("Please place your finger on the sensor...")
         
-        # Start sensor
-        self.sensor.start_sensor()
-        
-        # Wait for stabilization and collect multiple readings
-        measurements: list[Any] = []
-        start_time = time.time()
-        stable_reading_count = 0
-        stabilization_time = self.config["measurement"]["stabilization_time"]
-        min_readings = self.config["measurement"]["min_readings"]
-        
-        print(f"Waiting for stable reading (up to {stabilization_time}s)...")
-        
-        while time.time() - start_time < stabilization_time:
-            time.sleep(2)  # Check every 2 seconds
-            
-            current_bpm = self.sensor.bpm
-            current_spo2 = self.sensor.spo2
-            
-            if current_bpm > 0 and current_spo2 > 0:  # Valid reading
-                measurements.append((current_bpm, current_spo2))
-                stable_reading_count += 1
-                print(f"Reading {stable_reading_count}: BPM = {current_bpm:.1f}, SpO2 = {current_spo2:.1f}")
-                
-                if stable_reading_count >= min_readings:
-                    # Check if readings are stable (within 10% variance)
-                    if len(measurements) >= 3:
-                        recent = measurements[-3:]
-                        avg = sum(recent) / len(recent)
-                        variance = max(recent) - min(recent)
-                        if variance / avg < 0.1:  # Less than 10% variance
-                            print("Stable reading achieved!")
-                            break
-        
-        # Stop sensor
-        self.sensor.stop_sensor()
-        
-        # Calculate final measurement
-        if len(measurements) >= min_readings:
-            # Use median to reduce outlier impact
-            measurements.sort()
-            median_bpm = measurements[len(measurements) // 2][0]
-            median_spo2 = measurements[len(measurements) // 2][1]
-            
+        try:
+            # Get measurement from sensor (blocks until complete or timeout)
+            hr, spo2 = self.sensor.get_measurement()
+
+            # Create successful measurement data
             measurement_data = {
                 "api_key": self.config["security"]["api_key"],
                 "device_id": self.config["device"]["id"],
-                "heart_rate": round(median_bpm, 1),
-                "spo2": round(median_spo2, 1),
+                "heart_rate": hr,
+                "spo2": spo2,
                 "timestamp": datetime.now().isoformat(),
-                "valid": True,
-                "reading_count": len(measurements)
+                "valid": True
             }
             
-            print(f"\n✓ Measurement complete: HR={measurement_data['heart_rate']} BPM, SpO2={measurement_data['spo2']}%")
-        else:
+            print(f"\n✓ Measurement complete: HR={hr} BPM, SpO2={spo2}%")
+
+        except ValueError as e:
+            # Measurement failed - return invalid measurement with error
             measurement_data = {
                 "api_key": self.config["security"]["api_key"],
                 "device_id": self.config["device"]["id"],
@@ -415,10 +464,23 @@ class HeartTrackDevice:
                 "spo2": 0,
                 "timestamp": datetime.now().isoformat(),
                 "valid": False,
-                "error": "Insufficient stable readings"
+                "error": str(e)
             }
-            print("\n✗ Measurement failed: Could not get stable reading")
-        
+            print(f"\n✗ Measurement failed: {e}")
+
+        except Exception as e:
+            # Unexpected error
+            measurement_data = {
+                "api_key": self.config["security"]["api_key"],
+                "device_id": self.config["device"]["id"],
+                "heart_rate": 0,
+                "spo2": 0,
+                "timestamp": datetime.now().isoformat(),
+                "valid": False,
+                "error": f"Unexpected error: {str(e)}"
+            }
+            print(f"\n✗ Unexpected error during measurement: {e}")
+
         return measurement_data
     
     def transmit_data(self, measurement: dict[str, Any]) -> bool:
@@ -591,7 +653,7 @@ class HeartTrackDevice:
                     self.last_measurement_time = datetime.now()
                     
                     if self.current_measurement["valid"]:
-                        # 立即保存到本地,避免数据丢失
+                        # Save measurement locally first
                         self.store_locally(self.current_measurement)
                         self.state = DeviceState.TRANSMITTING
                     else:
@@ -624,9 +686,6 @@ class HeartTrackDevice:
     
     def cleanup(self):
         """Clean up resources before exit."""
-        print("Stopping sensor...")
-        self.sensor.stop_sensor()
-        
         if self.mqtt_client:
             print("Disconnecting from AWS IoT...")
             self.mqtt_client.stop()
@@ -660,7 +719,12 @@ def main():
         action="store_true",
         help="Run in test mode with shorter intervals"
     )
-    
+    parser.add_argument(
+        "--offline-mode",
+        action="store_true",
+        help="Force offline mode to test local storage and yellow LED (disables MQTT)"
+    )
+
     args = parser.parse_args()
     
     # Create and run device
@@ -668,6 +732,17 @@ def main():
         config_file=args.config
     )
     
+    # Override config for offline mode
+    if args.offline_mode:
+        print("\n*** RUNNING IN OFFLINE MODE ***")
+        print("MQTT connection disabled - all data will be stored locally")
+        print("Yellow LED will flash after measurements")
+        # Force offline by disconnecting MQTT and setting wifi_connected to False
+        if device.mqtt_client:
+            device.mqtt_client.stop()
+            device.mqtt_client = None
+        device.wifi_connected = False
+
     # Override config for test mode
     if args.test_mode:
         print("\n*** RUNNING IN TEST MODE ***")
@@ -676,6 +751,11 @@ def main():
         print("Measurement interval set to 15 seconds")
         print(f"First measurement in 10 seconds")
     
+    # Combined mode message
+    if args.test_mode and args.offline_mode:
+        print("\n*** COMBINED: TEST + OFFLINE MODE ***")
+        print("Short intervals + Offline storage + Yellow LED")
+
     # Run the state machine
     device.run_state_machine()
 
