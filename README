@@ -1,0 +1,223 @@
+# Heart Track - IoT Heart Rate Monitoring System
+
+A comprehensive IoT-enabled web application for monitoring heart rate and blood oxygen saturation levels. ECE 413/513 Final Project.
+
+## 👥 Team
+
+| Name | Role |
+|------|------|
+| Zhengxiaohe | Frontend & Backend Developer |
+| Zhenyuqi | IoT & Hardware Developer |
+| Haotangli | Database & API Developer |
+
+## ✨ Features
+
+### Core Features
+- **User Authentication** - JWT-based secure registration and login
+- **Device Management** - Register and manage multiple Raspberry Pi devices
+- **Health Monitoring** - Real-time heart rate and blood oxygen tracking
+- **Data Visualization** - Interactive charts with daily/weekly views
+- **AI Health Assistant** - LLM-powered chat with RAG for personalized health insights
+
+### Physician Portal (ECE 513)
+- Separate physician registration and dashboard
+- Patient management and health data viewing
+- Measurement frequency adjustment
+
+### IoT Device Features
+- Raspberry Pi with MAX30102 sensor
+- LED status indicators (Blue/Green/Yellow/Red)
+- Offline data storage (up to 24 hours)
+- Automatic sync when reconnected
+
+## 🛠 Tech Stack
+
+| Layer | Technologies |
+|-------|-------------|
+| Backend | Node.js, Express.js, MongoDB, JWT |
+| Frontend | HTML5, CSS3, JavaScript, Chart.js |
+| IoT | Raspberry Pi, MAX30102 Sensor |
+| AI | LLM API with RAG |
+
+## 📁 Project Structure
+
+```
+heart-track/
+├── server.js                 # Main server
+├── middleware/
+│   ├── auth.js              # JWT authentication
+│   └── validation.js        # Request validation
+├── models/
+│   ├── User.js              # User model
+│   ├── Device.js            # Device model
+│   ├── Measurement.js       # Measurement model
+│   └── Physician.js         # Physician model
+├── routes/
+│   ├── auth.js              # Auth endpoints
+│   ├── users.js             # User endpoints
+│   ├── devices.js           # Device endpoints
+│   ├── measurements.js      # Measurement endpoints
+│   └── chat.js              # AI chat endpoints
+├── public/
+│   ├── index.html           # Landing page
+│   ├── login.html           # Login page
+│   ├── register.html        # User registration
+│   ├── dashboard.html       # User dashboard
+│   ├── devices.html         # Device management
+│   ├── profile.html         # User profile
+│   ├── chat.html            # AI health assistant
+│   ├── physician-register.html
+│   ├── physician-dashboard.html
+│   ├── css/styles.css
+│   └── js/
+│       ├── main.js          # Shared utilities
+│       ├── auth.js          # Auth logic
+│       ├── dashboard.js     # Dashboard logic
+│       ├── devices.js       # Device logic
+│       ├── profile.js       # Profile logic
+│       ├── chat.js          # Chat logic
+│       └── physician-dashboard.js
+└── certs/                    # SSL certificates
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js v14+
+- MongoDB v4.4+
+
+### Installation
+
+```bash
+# Clone and install
+git clone [repo-url]
+cd heart-track
+npm install
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your settings
+
+# Start server
+npm start
+```
+
+### Environment Variables
+
+```env
+PORT=3000
+MONGODB_URI=mongodb://localhost:27017/hearttrack
+JWT_SECRET=your_secret_key
+LLM_API_KEY=your_llm_api_key
+LLM_API_URL=your_llm_api_url
+```
+
+## 📚 API Endpoints
+
+### Authentication
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register user |
+| POST | `/api/auth/login` | Login |
+| POST | `/api/auth/physician/register` | Register physician |
+
+### Users
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/users/me` | Get profile |
+| PUT | `/api/users/me` | Update profile |
+| PUT | `/api/users/me/preferences` | Update preferences |
+| GET | `/api/users/physicians` | List physicians |
+
+### Devices
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/devices` | List devices |
+| POST | `/api/devices/register` | Register device |
+| DELETE | `/api/devices/:id` | Remove device |
+
+### Measurements
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/measurements` | Record measurement |
+| POST | `/api/measurements/batch` | Batch upload |
+| GET | `/api/measurements` | Get measurements |
+| GET | `/api/measurements/summary/weekly` | Weekly summary |
+| GET | `/api/measurements/daily/:date` | Daily data |
+
+### Chat (AI Assistant)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/chat` | Send message |
+| GET | `/api/chat/context` | Get health context |
+
+## 🔧 Hardware Setup
+
+### Components
+- Raspberry Pi
+- MAX30102 Pulse Oximeter Sensor
+- Jumper wires
+
+### Wiring
+```
+MAX30102    Raspberry Pi
+VIN    →    3.3V
+GND    →    GND
+SDA    →    GPIO 2 (SDA)
+SCL    →    GPIO 3 (SCL)
+```
+
+### LED Indicators
+| Color | Status |
+|-------|--------|
+| Blue | Measurement in progress |
+| Green | Data sent successfully |
+| Yellow | Stored offline |
+| Red | Sensor error |
+
+## 🚢 Deployment
+
+### AWS EC2
+
+```bash
+# Install dependencies
+sudo apt update
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt install -y nodejs mongodb-org
+
+# Setup application
+git clone [repo-url]
+cd heart-track
+npm install
+
+# Run with PM2
+sudo npm install -g pm2
+pm2 start server.js --name heart-track
+pm2 startup && pm2 save
+```
+
+### HTTPS Setup
+
+```bash
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d your-domain.com
+```
+
+## 🐛 Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| MongoDB error | Check `sudo systemctl status mongod` |
+| Port in use | `lsof -i :3000` then `kill -9 [PID]` |
+| Device not connecting | Verify API key and server URL |
+| Sensor not found | Check I2C wiring |
+
+---
+
+**ECE 413/513 Final Project - Fall 2025**
+Link: https://zhengxiaohe.duckdns.org:8443/
+User Login: haotangli@arizona.edu @Uofa_123456789
+Physician Login: zhenyuqi@arizona.edu  @Uofa_123456789
+Pitch VIdeo: https://www.youtube.com/watch?v=MfQe6rncOtQ
+Demo Video: https://youtu.be/eqh4Rk9r1dY
+github Link: https://github.com/miraclehetech/ECE-513
