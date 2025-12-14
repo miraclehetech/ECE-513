@@ -15,7 +15,8 @@ class HeartRateMonitor(object):
 
     def __init__(self, print_raw=False, print_result=False):
         self.bpm = 0
-        if print_raw is True:
+        self.spo2 = 0
+        if print_raw:
             print('IR, Red')
         self.print_raw = print_raw
         self.print_result = print_result
@@ -56,7 +57,7 @@ class HeartRateMonitor(object):
                             spo2s.pop(0)
                         self.bpm = np.mean(bpms)
                         self.spo2 = np.mean(spo2s)
-                        if (np.mean(ir_data) < 50000 and np.mean(red_data) < 50000):
+                        if np.mean(ir_data) < 50000:
                             self.bpm = 0
                             self.spo2 = 0
                             if self.print_result:

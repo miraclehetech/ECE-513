@@ -265,7 +265,7 @@ class HeartTrackDevice:
         except Exception as e:
             print(f"Error setting up MQTT connection: {e}")
             self.wifi_connected = False
-    
+
     def on_lifecycle_attempting_connect(self, lifecycle_attempting_connect_data: Any):
         """MQTT lifecycle callback: attempting to connect."""
         print("Attempting to connect to AWS IoT...")
@@ -357,7 +357,7 @@ class HeartTrackDevice:
         self.sensor.start_sensor()
         
         # Wait for stabilization and collect multiple readings
-        measurements : list[Any] = []
+        measurements: list[Any] = []
         start_time = time.time()
         stable_reading_count = 0
         stabilization_time = self.config["measurement"]["stabilization_time"]

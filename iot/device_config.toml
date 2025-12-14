@@ -13,18 +13,18 @@ min_readings = 3           # Minimum readings to average
 
 [device]
 id = "device_001"
-reminder_timeout_seconds = 60  # 5 minutes
+reminder_timeout_seconds = 300  # 5 minutes
 
 [storage]
 max_hours = 24          # Maximum local storage duration (hours)
-file = "local_measurements.db"  # SQLite database file
+file = "local_measurements.sqlite"  # SQLite database file
 
 [mqtt]
-endpoint = ""
+endpoint = "a1mzwd0glnd7xr-ats.iot.us-west-1.amazonaws.com"
 client_id = "ece513"
 topic = "ece513"
 
 [security]
-cert_path = ""
-key_path = ""
-api_key = ""
+cert_path = "rpi5-bravo.cert.pem"
+key_path = "rpi5-bravo.private.key"
+api_key = "236827511d24d5c8c19561b632e257bc3469aa4c9a9a9a97f286ff66b26f4a45"
